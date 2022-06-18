@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -40,6 +41,10 @@ var flags = []cli.Flag{
 		Name:    "from",
 		Usage:   "翻訳元",
 		Aliases: []string{"f"},
+	},
+	&cli.BoolFlag{
+		Name:  "json",
+		Usage: "JSON で出力",
 	},
 }
 
@@ -105,6 +110,14 @@ func cmdRun(c *cli.Context) error {
 				"インターネットの接続、APIの設定等を確認してください\n"+
 				"[Log]%s\n",
 			color.RedString("Error"), err)
+	}
+	if c.Bool("json") {
+		err = json.NewEncoder(os.Stdout).Encode(response)
+		if err != nil {
+			return err
+		}
+		fmt.Println()
+		return nil
 	}
 
 	if response.Msg == "unexpected" {
