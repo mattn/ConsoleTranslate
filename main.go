@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/code-raisan/gocolor"
+	"github.com/fatih/color"
 )
 
 const (
@@ -22,7 +22,7 @@ const (
 func main() {
 	if isset(1, os.Args) && os.Args[1] == "help" {
 		if isset(2, os.Args) && os.Args[2] == "api" {
-			fmt.Printf("APIの設定は %s を参照してください\n", gocolor.Purple(git_repo))
+			fmt.Printf("APIの設定は %s を参照してください\n", color.MagentaString(git_repo))
 			os.Exit(0)
 		} else {
 			fmt.Printf(
@@ -31,23 +31,23 @@ func main() {
 					"%s -t, --to : 翻訳先の言語コードを指定\n"+
 					"%s -f, --from : 翻訳元の言語コードを指定\n\n"+
 					"対応している言語の言語コード一覧は `%s` を参照\n",
-				command, gocolor.Red("(必須)"),
-				gocolor.Cayn("(任意)"),
-				gocolor.Purple("https://cloud.google.com/translate/docs/languages"))
+				command, color.RedString("(必須)"),
+				color.CyanString("(任意)"),
+				color.MagentaString("https://cloud.google.com/translate/docs/languages"))
 		}
 	} else if isset(1, os.Args) && os.Args[1] == "version" {
 		fmt.Printf(
 			"\n%s v%s\n"+
 				"Github: %s\n"+
 				"Help: `%s`\n\n",
-			app_name, version, git_repo, gocolor.Cayn(command+" help"))
+			app_name, version, git_repo, color.CyanString(command+" help"))
 	} else {
 		conf, err := loadConfig(dev)
 		if err != nil {
 			fmt.Printf(
 				"%s: 設定ファイルの読み込みに失敗\n"+
 					"設定は `%s` を参照してください\n",
-				gocolor.Red("Error"), gocolor.Purple(git_repo))
+				color.RedString("Error"), color.MagentaString(git_repo))
 			os.Exit(0)
 		}
 		to, to_fi := getFlag("-t", "--to", os.Args)
@@ -65,7 +65,7 @@ func main() {
 			fmt.Printf(
 				"%s: 必要な引数がありません\n"+
 					"詳細は `%s` を参照してください。\n",
-				gocolor.Red("Error"), gocolor.Cayn(command+" help"))
+				color.RedString("Error"), color.CyanString(command+" help"))
 			os.Exit(0)
 		}
 
@@ -81,7 +81,7 @@ func main() {
 				"%s: リクエストに失敗しました\n"+
 					"インターネットの接続、APIの設定等を確認してください\n"+
 					"[Log]%s\n",
-				gocolor.Red("Error"), err)
+				color.RedString("Error"), err)
 			os.Exit(0)
 		}
 		defer resp.Body.Close()
@@ -90,7 +90,7 @@ func main() {
 			fmt.Printf(
 				"%s: リクエストに失敗しました\n"+
 					"[Log]HTTP Status: `%s`\n",
-				gocolor.Red("Error"), resp.Status)
+				color.RedString("Error"), resp.Status)
 			os.Exit(0)
 		}
 
@@ -99,7 +99,7 @@ func main() {
 			fmt.Printf(
 				"%s: リクエストの解析に失敗しました\n"+
 					"[Log]%s\n",
-				gocolor.Red("Error"), err)
+				color.RedString("Error"), err)
 			os.Exit(0)
 		}
 		if response.Msg == "unexpected" {
@@ -107,8 +107,8 @@ func main() {
 				"%s: 翻訳に失敗しました\n"+
 					"翻訳に対応している言語は `%s` を参照してください。\n"+
 					"[Log]API Error\n",
-				gocolor.Red("Error"),
-				gocolor.Purple("https://cloud.google.com/translate/docs/languages"))
+				color.RedString("Error"),
+				color.MagentaString("https://cloud.google.com/translate/docs/languages"))
 			os.Exit(0)
 		}
 
@@ -118,9 +118,9 @@ func main() {
 		} else {
 			lang_info = from
 		}
-		fmt.Printf("%s\n %s\n", gocolor.Purple("[Before: "+lang_info+"]"), args[0])
+		fmt.Printf("%s\n %s\n", color.MagentaString("[Before: "+lang_info+"]"), args[0])
 		fmt.Print("  ↓\n")
-		fmt.Printf("%s\n %s\n", gocolor.Green("[After: "+to+"]"), response.Text)
+		fmt.Printf("%s\n %s\n", color.GreenString("[After: "+to+"]"), response.Text)
 		os.Exit(0)
 	}
 }
