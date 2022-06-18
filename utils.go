@@ -9,33 +9,6 @@ import (
 	"path/filepath"
 )
 
-func getFlag(k string, kf string, s []string) (string, int) {
-	for i, v := range s {
-		if k == v {
-			return s[i+1], i
-		}
-	}
-	for i, v := range s {
-		if kf == v {
-			return s[i+1], i
-		}
-	}
-	return "", 0
-}
-
-func contains(s []int, e int) bool {
-	for _, v := range s {
-		if e == v {
-			return true
-		}
-	}
-	return false
-}
-
-func isset(k int, s []string) bool {
-	return len(s) >= k+1
-}
-
 type config struct {
 	Api string `json:"api"`
 }
