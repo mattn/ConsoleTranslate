@@ -117,7 +117,7 @@ func run() int {
 		}
 		defer resp.Body.Close()
 
-		if resp.StatusCode != 200 {
+		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf(
 				"%s: リクエストに失敗しました\n"+
 					"[Log]HTTP Status: `%s`\n",
