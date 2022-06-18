@@ -22,10 +22,12 @@ const (
 func main() {
 	if isset(1, os.Args) && os.Args[1] == "help" {
 		if isset(2, os.Args) && os.Args[2] == "api" {
-			fmt.Printf("APIの設定は %s を参照してください\n", color.MagentaString(git_repo))
+			fmt.Fprintf(color.Output,
+				"APIの設定は %s を参照してください\n",
+				color.MagentaString(git_repo))
 			os.Exit(0)
 		} else {
-			fmt.Printf(
+			fmt.Fprintf(color.Output,
 				"Example\n\n"+
 					"%s <テキスト> -t [翻訳先] (-f [翻訳元]:任意)\n\n"+
 					"%s -t, --to : 翻訳先の言語コードを指定\n"+
@@ -36,7 +38,7 @@ func main() {
 				color.MagentaString("https://cloud.google.com/translate/docs/languages"))
 		}
 	} else if isset(1, os.Args) && os.Args[1] == "version" {
-		fmt.Printf(
+		fmt.Fprintf(color.Output,
 			"\n%s v%s\n"+
 				"Github: %s\n"+
 				"Help: `%s`\n\n",
@@ -44,7 +46,7 @@ func main() {
 	} else {
 		conf, err := loadConfig(dev)
 		if err != nil {
-			fmt.Printf(
+			fmt.Fprintf(color.Output,
 				"%s: 設定ファイルの読み込みに失敗\n"+
 					"設定は `%s` を参照してください\n",
 				color.RedString("Error"), color.MagentaString(git_repo))
@@ -62,7 +64,7 @@ func main() {
 			}
 		}
 		if to == "" {
-			fmt.Printf(
+			fmt.Fprintf(color.Output,
 				"%s: 必要な引数がありません\n"+
 					"詳細は `%s` を参照してください。\n",
 				color.RedString("Error"), color.CyanString(command+" help"))
@@ -77,7 +79,7 @@ func main() {
 
 		resp, err := http.Get(urlGen(to, from, args[0], conf.Api))
 		if err != nil {
-			fmt.Printf(
+			fmt.Fprintf(color.Output,
 				"%s: リクエストに失敗しました\n"+
 					"インターネットの接続、APIの設定等を確認してください\n"+
 					"[Log]%s\n",
@@ -87,7 +89,7 @@ func main() {
 		defer resp.Body.Close()
 
 		if resp.StatusCode != 200 {
-			fmt.Printf(
+			fmt.Fprintf(color.Output,
 				"%s: リクエストに失敗しました\n"+
 					"[Log]HTTP Status: `%s`\n",
 				color.RedString("Error"), resp.Status)
@@ -96,14 +98,14 @@ func main() {
 
 		body, _ := io.ReadAll(resp.Body)
 		if err := json.Unmarshal(body, response); err != nil {
-			fmt.Printf(
+			fmt.Fprintf(color.Output,
 				"%s: リクエストの解析に失敗しました\n"+
 					"[Log]%s\n",
 				color.RedString("Error"), err)
 			os.Exit(0)
 		}
 		if response.Msg == "unexpected" {
-			fmt.Printf(
+			fmt.Fprintf(color.Output,
 				"%s: 翻訳に失敗しました\n"+
 					"翻訳に対応している言語は `%s` を参照してください。\n"+
 					"[Log]API Error\n",
@@ -118,9 +120,13 @@ func main() {
 		} else {
 			lang_info = from
 		}
-		fmt.Printf("%s\n %s\n", color.MagentaString("[Before: "+lang_info+"]"), args[0])
-		fmt.Print("  ↓\n")
-		fmt.Printf("%s\n %s\n", color.GreenString("[After: "+to+"]"), response.Text)
+		fmt.Fprintf(color.Output,
+			"%s\n %s\n",
+			color.MagentaString("[Before: "+lang_info+"]"), args[0])
+		fmt.Fprint(color.Output, "  ↓\n")
+		fmt.Fprintf(color.Output,
+			"%s\n %s\n",
+			color.GreenString("[After: "+to+"]"), response.Text)
 		os.Exit(0)
 	}
 }
