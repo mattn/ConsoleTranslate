@@ -43,7 +43,7 @@ type Response struct {
 }
 
 func HttpRequest(api_url string) (*Response, error) {
-	var response *Response
+	var response Response
 	resp, err := http.Get(api_url)
 	if err != nil {
 		return nil, err
@@ -60,10 +60,10 @@ func HttpRequest(api_url string) (*Response, error) {
 		return nil, err
 	}
 
-	if err := json.Unmarshal(body, response); err != nil {
+	if err := json.Unmarshal(body, &response); err != nil {
 		return nil, err
 	}
-	return response, nil
+	return &response, nil
 }
 
 func urlGen(to string, from string, text string, base string) string {
