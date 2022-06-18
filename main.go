@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
+	"github.com/urfave/cli/v2"
 )
 
 const (
@@ -19,31 +20,62 @@ const (
 	git_repo = "https://github.com/Ablaze-MIRAI/ConsoleTranslate"
 )
 
+var commands = []*cli.Command{
+	{
+		Name:  "help",
+		Usage: "ヘルプ",
+		Action: func(c *cli.Context) error {
+			topic := c.Args().First()
+			if topic == "api" {
+				fmt.Fprintf(color.Output,
+					"APIの設定は %s を参照してください\n",
+					color.MagentaString(git_repo))
+			} else {
+				fmt.Fprintf(color.Output,
+					"Example\n\n"+
+						"%s <テキスト> -t [翻訳先] (-f [翻訳元]:任意)\n\n"+
+						"%s -t, --to : 翻訳先の言語コードを指定\n"+
+						"%s -f, --from : 翻訳元の言語コードを指定\n\n"+
+						"対応している言語の言語コード一覧は `%s` を参照\n",
+					command, color.RedString("(必須)"),
+					color.CyanString("(任意)"),
+					color.MagentaString("https://cloud.google.com/translate/docs/languages"))
+			}
+			return nil
+		},
+	},
+	{
+		Name:  "version",
+		Usage: "バージョン",
+		Action: func(c *cli.Context) error {
+			fmt.Fprintf(color.Output,
+				"\n%s v%s\n"+
+					"Github: %s\n"+
+					"Help: `%s`\n\n",
+				app_name, version, git_repo, color.CyanString(command+" help"))
+			return nil
+		},
+	},
+}
+
 func main() {
-	if isset(1, os.Args) && os.Args[1] == "help" {
-		if isset(2, os.Args) && os.Args[2] == "api" {
-			fmt.Fprintf(color.Output,
-				"APIの設定は %s を参照してください\n",
-				color.MagentaString(git_repo))
-			os.Exit(0)
-		} else {
-			fmt.Fprintf(color.Output,
-				"Example\n\n"+
-					"%s <テキスト> -t [翻訳先] (-f [翻訳元]:任意)\n\n"+
-					"%s -t, --to : 翻訳先の言語コードを指定\n"+
-					"%s -f, --from : 翻訳元の言語コードを指定\n\n"+
-					"対応している言語の言語コード一覧は `%s` を参照\n",
-				command, color.RedString("(必須)"),
-				color.CyanString("(任意)"),
-				color.MagentaString("https://cloud.google.com/translate/docs/languages"))
-		}
-	} else if isset(1, os.Args) && os.Args[1] == "version" {
-		fmt.Fprintf(color.Output,
-			"\n%s v%s\n"+
-				"Github: %s\n"+
-				"Help: `%s`\n\n",
-			app_name, version, git_repo, color.CyanString(command+" help"))
-	} else {
+	app := cli.NewApp()
+	app.Name = app_name
+	app.Version = version
+	app.Commands = commands
+	app.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:    "to",
+			Usage:   "翻訳先",
+			Aliases: []string{"t"},
+		},
+		&cli.StringFlag{
+			Name:    "from",
+			Usage:   "翻訳元",
+			Aliases: []string{"f"},
+		},
+	}
+	app.Action = func(c *cli.Context) error {
 		conf, err := loadConfig(dev)
 		if err != nil {
 			fmt.Fprintf(color.Output,
@@ -52,17 +84,9 @@ func main() {
 				color.RedString("Error"), color.MagentaString(git_repo))
 			os.Exit(0)
 		}
-		to, to_fi := getFlag("-t", "--to", os.Args)
-		from, from_fi := getFlag("-f", "--from", os.Args)
-		flags := []int{to_fi, to_fi + 1, from_fi, from_fi + 1}
-		var args []string
-		for i, v := range os.Args {
-			if i != 0 {
-				if !contains(flags, i) {
-					args = append(args, v)
-				}
-			}
-		}
+		to := c.String("to")
+		from := c.String("from")
+		arg := c.Args().First()
 		if to == "" {
 			fmt.Fprintf(color.Output,
 				"%s: 必要な引数がありません\n"+
@@ -77,7 +101,7 @@ func main() {
 			Text string `json:"text"`
 		}{}
 
-		resp, err := http.Get(urlGen(to, from, args[0], conf.Api))
+		resp, err := http.Get(urlGen(to, from, arg, conf.Api))
 		if err != nil {
 			fmt.Fprintf(color.Output,
 				"%s: リクエストに失敗しました\n"+
@@ -122,11 +146,12 @@ func main() {
 		}
 		fmt.Fprintf(color.Output,
 			"%s\n %s\n",
-			color.MagentaString("[Before: "+lang_info+"]"), args[0])
+			color.MagentaString("[Before: "+lang_info+"]"), arg)
 		fmt.Fprint(color.Output, "  ↓\n")
 		fmt.Fprintf(color.Output,
 			"%s\n %s\n",
 			color.GreenString("[After: "+to+"]"), response.Text)
-		os.Exit(0)
+		return nil
 	}
+	app.Run(os.Args)
 }
