@@ -55,7 +55,10 @@ func HttpRequest(api_url string) (*Response, error) {
 		return nil, err
 	}
 
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 
 	if err := json.Unmarshal(body, response); err != nil {
 		return nil, err
