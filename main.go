@@ -10,11 +10,11 @@ import (
 
 const (
 	// DEV MODE
-	dev      = false
-	app_name = "ConsoleTranslate"
-	version  = "1.0.0"
-	command  = "translate"
-	git_repo = "https://github.com/Ablaze-MIRAI/ConsoleTranslate"
+	dev     = false
+	appName = "ConsoleTranslate"
+	version = "1.0.0"
+	command = "translate"
+	gitRepo = "https://github.com/Ablaze-MIRAI/ConsoleTranslate"
 )
 
 var commands = []*cli.Command{
@@ -26,7 +26,7 @@ var commands = []*cli.Command{
 			if topic == "api" {
 				fmt.Fprintf(color.Output,
 					"APIの設定は %s を参照してください\n",
-					color.MagentaString(git_repo))
+					color.MagentaString(gitRepo))
 			} else {
 				fmt.Fprintf(color.Output,
 					"Example\n\n"+
@@ -49,7 +49,7 @@ var commands = []*cli.Command{
 				"\n%s v%s\n"+
 					"Github: %s\n"+
 					"Help: `%s`\n\n",
-				app_name, version, git_repo, color.CyanString(command+" help"))
+				appName, version, gitRepo, color.CyanString(command+" help"))
 			return nil
 		},
 	},
@@ -65,7 +65,7 @@ func msg(err error) int {
 
 func run() int {
 	app := cli.NewApp()
-	app.Name = app_name
+	app.Name = appName
 	app.Version = version
 	app.Commands = commands
 	app.Flags = []cli.Flag{
@@ -86,7 +86,7 @@ func run() int {
 			return fmt.Errorf(
 				"%s: 設定ファイルの読み込みに失敗\n"+
 					"設定は `%s` を参照してください\n",
-				color.RedString("Error"), color.MagentaString(git_repo))
+				color.RedString("Error"), color.MagentaString(gitRepo))
 		}
 		to := c.String("to")
 		from := c.String("from")
@@ -116,15 +116,15 @@ func run() int {
 				color.MagentaString("https://cloud.google.com/translate/docs/languages"))
 		}
 
-		var lang_info string
+		var langInfo string
 		if from == "" {
-			lang_info = "auto"
+			langInfo = "auto"
 		} else {
-			lang_info = from
+			langInfo = from
 		}
 		fmt.Fprintf(color.Output,
 			"%s\n %s\n",
-			color.MagentaString("[Before: "+lang_info+"]"), arg)
+			color.MagentaString("[Before: "+langInfo+"]"), arg)
 		fmt.Fprint(color.Output, "  ↓\n")
 		fmt.Fprintf(color.Output,
 			"%s\n %s\n",
