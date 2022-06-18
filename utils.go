@@ -21,7 +21,7 @@ func loadConfig(dev bool) (*config, error) {
 			return nil, err
 		}
 		rund := filepath.Dir(runp)
-		configfp = rund + "/config.json"
+		configfp = filepath.Join(rund, "config.json")
 	} else {
 		configfp = "/config.json"
 	}
