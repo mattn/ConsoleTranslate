@@ -67,11 +67,11 @@ func HttpRequest(api_url string) (*Response, error) {
 }
 
 func urlGen(to string, from string, text string, base string) string {
-	var query string
-	if from == "" {
-		query = "?to=" + to + "&text=" + url.QueryEscape(text)
-	} else {
-		query = "?to=" + to + "&from=" + from + "&text=" + url.QueryEscape(text)
+	param := url.Values{}
+	param.Set("to", to)
+	if from != "" {
+		param.Set("from", from)
 	}
-	return base + query
+	param.Set("text", url.QueryEscape(text))
+	return base + "?" + param.Encode()
 }
