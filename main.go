@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 
 	"github.com/fatih/color"
@@ -101,13 +98,7 @@ func run() int {
 				color.RedString("Error"), color.CyanString(command+" help"))
 		}
 
-		response := &struct {
-			Code int    `json:"code"`
-			Msg  string `json:"msg"`
-			Text string `json:"text"`
-		}{}
-
-		resp, err := http.Get(urlGen(to, from, arg, conf.Api))
+		response, err := HttpRequest(urlGen(to, from, arg, conf.Api))
 		if err != nil {
 			return fmt.Errorf(
 				"%s: リクエストに失敗しました\n"+
@@ -115,22 +106,7 @@ func run() int {
 					"[Log]%s\n",
 				color.RedString("Error"), err)
 		}
-		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf(
-				"%s: リクエストに失敗しました\n"+
-					"[Log]HTTP Status: `%s`\n",
-				color.RedString("Error"), resp.Status)
-		}
-
-		body, _ := io.ReadAll(resp.Body)
-		if err := json.Unmarshal(body, response); err != nil {
-			return fmt.Errorf(
-				"%s: リクエストの解析に失敗しました\n"+
-					"[Log]%s\n",
-				color.RedString("Error"), err)
-		}
 		if response.Msg == "unexpected" {
 			return fmt.Errorf(
 				"%s: 翻訳に失敗しました\n"+

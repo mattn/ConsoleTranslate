@@ -51,7 +51,7 @@ func HttpRequest(api_url string) (*Response, error) {
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, err
 	}
 
