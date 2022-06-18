@@ -58,7 +58,15 @@ var commands = []*cli.Command{
 	},
 }
 
-func main() {
+func msg(err error) int {
+	if err != nil {
+		fmt.Fprintln(color.Error, err.Error())
+		return 1
+	}
+	return 0
+}
+
+func run() int {
 	app := cli.NewApp()
 	app.Name = app_name
 	app.Version = version
@@ -78,21 +86,19 @@ func main() {
 	app.Action = func(c *cli.Context) error {
 		conf, err := loadConfig(dev)
 		if err != nil {
-			fmt.Fprintf(color.Output,
+			return fmt.Errorf(
 				"%s: 設定ファイルの読み込みに失敗\n"+
 					"設定は `%s` を参照してください\n",
 				color.RedString("Error"), color.MagentaString(git_repo))
-			os.Exit(0)
 		}
 		to := c.String("to")
 		from := c.String("from")
 		arg := c.Args().First()
 		if to == "" {
-			fmt.Fprintf(color.Output,
+			return fmt.Errorf(
 				"%s: 必要な引数がありません\n"+
 					"詳細は `%s` を参照してください。\n",
 				color.RedString("Error"), color.CyanString(command+" help"))
-			os.Exit(0)
 		}
 
 		response := &struct {
@@ -103,39 +109,35 @@ func main() {
 
 		resp, err := http.Get(urlGen(to, from, arg, conf.Api))
 		if err != nil {
-			fmt.Fprintf(color.Output,
+			return fmt.Errorf(
 				"%s: リクエストに失敗しました\n"+
 					"インターネットの接続、APIの設定等を確認してください\n"+
 					"[Log]%s\n",
 				color.RedString("Error"), err)
-			os.Exit(0)
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode != 200 {
-			fmt.Fprintf(color.Output,
+			return fmt.Errorf(
 				"%s: リクエストに失敗しました\n"+
 					"[Log]HTTP Status: `%s`\n",
 				color.RedString("Error"), resp.Status)
-			os.Exit(0)
 		}
 
 		body, _ := io.ReadAll(resp.Body)
 		if err := json.Unmarshal(body, response); err != nil {
-			fmt.Fprintf(color.Output,
+			return fmt.Errorf(
 				"%s: リクエストの解析に失敗しました\n"+
 					"[Log]%s\n",
 				color.RedString("Error"), err)
-			os.Exit(0)
 		}
 		if response.Msg == "unexpected" {
-			fmt.Fprintf(color.Output,
+			return fmt.Errorf(
 				"%s: 翻訳に失敗しました\n"+
 					"翻訳に対応している言語は `%s` を参照してください。\n"+
 					"[Log]API Error\n",
 				color.RedString("Error"),
 				color.MagentaString("https://cloud.google.com/translate/docs/languages"))
-			os.Exit(0)
 		}
 
 		var lang_info string
@@ -153,5 +155,10 @@ func main() {
 			color.GreenString("[After: "+to+"]"), response.Text)
 		return nil
 	}
-	app.Run(os.Args)
+
+	return msg(app.Run(os.Args))
+}
+
+func main() {
+	os.Exit(run())
 }
